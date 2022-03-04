@@ -1,0 +1,11 @@
+checkpoint/*
+checkpoint*
+__pycache__/*
+history
+output/*
+loss.png
+*history*
+.vscode/*
+tmp_results.zip
+*.pyc
+*results*
