@@ -860,7 +860,7 @@ class IcdarValidationSequence(tf.keras.utils.Sequence):
 class IcdarEvaluationCallback(tf.keras.callbacks.Callback):
     def __init__(self, N = 5):
         super().__init__()
-        self.N = 5
+        self.N = N
         self.name = re.sub('[\-\s\:]', '', str(datetime.utcnow()))[:14]
         self.training_results_path = f"training_results_{self.name}"
         os.mkdir(self.training_results_path)
