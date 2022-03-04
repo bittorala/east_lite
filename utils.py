@@ -840,7 +840,7 @@ class IcdarTrainingSequence(tf.keras.utils.Sequence):
 class IcdarValidationSequence(tf.keras.utils.Sequence):
     def __init__(self):
         self.filenames = np.array(get_images(FLAGS.validation_data_path))
-        self.batch_size = FLAGS.batch_size()
+        self.batch_size = FLAGS.batch_size
         self.index = np.array(range(len(self.filenames)))
         np.random.shuffle(self.index)
 
