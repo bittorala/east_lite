@@ -4,7 +4,6 @@ import pickle
 
 import model as m
 
-INITIAL_LR = 1e-4
 MAX_STEPS = 100000
 DECAY_RATE = 0.94
 
@@ -16,7 +15,7 @@ def load_and_train():
     model = m.model(freeze=False)
     model.load_weights(FLAGS.checkpoint_path).expect_partial()
     lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
-        INITIAL_LR / 10, decay_steps=MAX_STEPS, decay_rate=DECAY_RATE, staircase=True
+        FLAGS.learning_rate, decay_steps=MAX_STEPS, decay_rate=DECAY_RATE
     )
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=lr_schedule),
@@ -25,10 +24,10 @@ def load_and_train():
     )
 
     history = model.fit(
-        IcdarTrainingSequence(8),
-        validation_data=IcdarValidationSequence(8),
+        IcdarTrainingSequence(),
+        validation_data=IcdarValidationSequence(),
         use_multiprocessing=False,
-        epochs=30,
+        epochs=FLAGS.epochs,
         callbacks=[IcdarEvaluationCallback(1)],
     )
     with open(f"history_ft", "wb") as f:
@@ -42,7 +41,7 @@ def train():
     # with strategy.scope():
     model = m.model(freeze=True)
     lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
-        INITIAL_LR, decay_steps=MAX_STEPS, decay_rate=DECAY_RATE, staircase=True
+        FLAGS.learning_rate, decay_steps=MAX_STEPS, decay_rate=DECAY_RATE, staircase=True
     )
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=lr_schedule),
@@ -61,7 +60,7 @@ def train():
         IcdarTrainingSequence(),
         validation_data=IcdarValidationSequence(),
         use_multiprocessing=False,
-        epochs=70,
+        epochs=FLAGS.epochs,
         callbacks=[model_checkpoint_callback, IcdarEvaluationCallback()],
     )
     with open(f"history", "wb") as f:
@@ -69,10 +68,7 @@ def train():
 
 
 if __name__ == "__main__":
-    # writer = tf.summary.create_file_writer('/tmp/east_tf2/logs')
-    # with writer.as_default():
     if FLAGS.load_and_train:
         load_and_train()
     else:
         train()
-        # writer.flush()

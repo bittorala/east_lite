@@ -1,2 +1,6 @@
+```
 docker build . -t east
-docker run --name east -d -v /home/bittor/data/:/data/ --gpus all -it east python train.py
+```
+```
+docker run --name east -d -v /home/bittor/data/:/data/ --gpus all -it east bash
+```

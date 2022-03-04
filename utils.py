@@ -55,9 +55,10 @@ parser.add_argument(
 )
 parser.add_argument("--load_and_train", action="store_true", default=False)
 parser.add_argument("--checkpoint_path", type=str, default="checkpoint/ckpt")
+parser.add_argument("--batch_size", type=int, default=16)
+parser.add_argument("--epochs", type=int, default=70)
+parser.add_argument("--learning_rate", type=float, default=1e-4)
 FLAGS = parser.parse_args()
-
-BATCH_SIZE = 16
 
 
 def get_images(path):
@@ -817,9 +818,9 @@ def generate(
 
 
 class IcdarTrainingSequence(tf.keras.utils.Sequence):
-    def __init__(self, batch_size = BATCH_SIZE):
+    def __init__(self):
         self.filenames = np.array(get_images(FLAGS.training_data_path))
-        self.batch_size = batch_size
+        self.batch_size = FLAGS.batch_size
         self.index = np.array(range(len(self.filenames)))
         np.random.shuffle(self.index)
 
@@ -837,9 +838,9 @@ class IcdarTrainingSequence(tf.keras.utils.Sequence):
 
 
 class IcdarValidationSequence(tf.keras.utils.Sequence):
-    def __init__(self, batch_size = BATCH_SIZE):
+    def __init__(self):
         self.filenames = np.array(get_images(FLAGS.validation_data_path))
-        self.batch_size = batch_size
+        self.batch_size = FLAGS.batch_size()
         self.index = np.array(range(len(self.filenames)))
         np.random.shuffle(self.index)
 
@@ -866,6 +867,8 @@ class IcdarEvaluationCallback(tf.keras.callbacks.Callback):
         self.logs_file = os.path.join(self.training_results_path, 'logs')
         f = open(self.logs_file, 'w')
         f.close()
+        with open(f'{self.logs_file}_FLAGS.json', 'w') as f:
+            json.dump(FLAGS.__dict__, f, indent=2)
 
 
     def on_epoch_end(self, epoch, logs=None):
@@ -877,7 +880,7 @@ class IcdarEvaluationCallback(tf.keras.callbacks.Callback):
             logs['epoch'] = epoch
             print(logs)
         with open(self.logs_file, 'a') as f:
-            json.dump(logs)
+            json.dump(logs, f)
         self.model.save_weights(os.path.join(self.training_results_path, f"ckpt_epoch_{epoch}"))
 
 
