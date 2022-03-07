@@ -35,11 +35,11 @@ parser.add_argument(
     default=0.1,
     help="when doing random crop from input image, the" "min length of min(H, W",
 )
-parser.add_argument("--load_and_train", action="store_true", default=False)
+parser.add_argument("--load", action="store_true", default=False)
 parser.add_argument("--checkpoint_path", type=str, default="checkpoint/ckpt")
 parser.add_argument("--batch_size", type=int, default=16)
 parser.add_argument("--epochs", type=int, default=70)
 parser.add_argument("--learning_rate", type=float, default=1e-4)
 parser.add_argument("--base_model", type=str, default="resnet")
+parser.add_argument("--unfreeze", action="store_true", default=False)
 cfg = parser.parse_args()
-

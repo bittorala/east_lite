@@ -2,21 +2,18 @@
 import glob
 import csv
 import cv2
-import time
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as Patches
-import argparse
 from zipfile import ZipFile
-import re
-from datetime import datetime
 import json
 
 import tensorflow as tf
 from icdar_detection_script import script
 import infer
 from config import cfg
+
 
 def get_images(path):
     files = []
@@ -791,7 +788,9 @@ class IcdarTrainingSequence(tf.keras.utils.Sequence):
         images, _, score_maps, geo_maps, training_masks = generate(filenames)
         if len(images) == 0:
             return self.__getitem__((idx + 1) % self.__len__())
-        return tf.convert_to_tensor(images), tf.convert_to_tensor(np.concatenate((geo_maps, score_maps, training_masks), axis=-1))
+        return tf.convert_to_tensor(images), tf.convert_to_tensor(
+            np.concatenate((geo_maps, score_maps, training_masks), axis=-1)
+        )
 
 
 class IcdarValidationSequence(tf.keras.utils.Sequence):
@@ -808,49 +807,48 @@ class IcdarValidationSequence(tf.keras.utils.Sequence):
         filenames = self.filenames[
             self.index[idx * self.batch_size : (idx + 1) * self.batch_size]
         ]
-        images, _, score_maps, geo_maps, training_masks = generate(filenames)
+        images, _, score_maps, geo_maps, training_masks = generate_non_augmented(filenames)
         if len(images) == 0:
             return self.__getitem__((idx + 1) % self.__len__())
-        return tf.convert_to_tensor(images), tf.convert_to_tensor(np.concatenate((geo_maps, score_maps, training_masks), axis=-1))
+        return tf.convert_to_tensor(images), tf.convert_to_tensor(
+            np.concatenate((geo_maps, score_maps, training_masks), axis=-1)
+        )
 
 
 class IcdarEvaluationCallback(tf.keras.callbacks.Callback):
-    def __init__(self, N = 5):
+    def __init__(self, name, N=5):
         super().__init__()
         self.N = N
-        self.name = re.sub('[\-\s\:]', '', str(datetime.utcnow()))[:14]
-        self.training_results_path = f"training_results_{self.name}"
+        self.training_results_path = f"training_results_{name}"
         os.mkdir(self.training_results_path)
-        self.logs_file = os.path.join(self.training_results_path, 'logs')
-        f = open(self.logs_file, 'w')
+        self.logs_file = os.path.join(self.training_results_path, "logs")
+        f = open(self.logs_file, "w")
         f.close()
-        with open(f'{self.logs_file}_cfg.json', 'w') as f:
+        with open(f"{self.logs_file}_cfg.json", "w") as f:
             json.dump(cfg.__dict__, f, indent=2)
-
 
     def on_epoch_end(self, epoch, logs=None):
         if epoch % self.N == 0:
             results = infer_and_test(self.model)
-            # print(f'precision {results["precision"]} | recall {results["recall"]}'
-            # f'| hmean {results["hmean"]}')
             logs = {**logs, **results}
-            logs['epoch'] = epoch
             print(logs)
-        with open(self.logs_file, 'a') as f:
+            self.model.save_weights(
+                os.path.join(self.training_results_path, f"ckpt_epoch_{epoch}")
+            )
+        logs["epoch"] = epoch
+        with open(self.logs_file, "a") as f:
             json.dump(logs, f)
-        self.model.save_weights(os.path.join(self.training_results_path, f"ckpt_epoch_{epoch}"))
 
 
 def infer_and_test(model):
     output_path = infer.infer(model)
-    zip_path = 'tmp_results.zip' 
-    with ZipFile(zip_path, 'w') as zipObj:
+    zip_path = "tmp_results.zip"
+    with ZipFile(zip_path, "w") as zipObj:
         for fn in os.listdir(output_path):
-            if not '.txt' in fn:
+            if not ".txt" in fn:
                 continue
             zipObj.write(os.path.join(output_path, fn), fn)
 
-
     res_dic = script.main(zip_path)
     # Return a dictionary with precision, recall and hmean
-    return res_dic['method']
+    return res_dic["method"]

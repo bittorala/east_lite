@@ -6,6 +6,7 @@ import tensorflow as tf
 from datetime import datetime
 
 from model import model
+
 # from utils import restore_rectangle_rbox, visualize_inferred, visualize_boxes, cfg
 import utils
 import lanms
@@ -23,9 +24,7 @@ def get_images():
     """
     files = []
     exts = ["jpg", "png", "jpeg", "JPG"]
-    for parent, _, filenames in os.walk(
-        cfg.validation_data_path
-    ):
+    for parent, _, filenames in os.walk(cfg.validation_data_path):
         for filename in filenames:
             for ext in exts:
                 if filename.endswith(ext):
@@ -84,7 +83,11 @@ def detect(score_map, geo_map, timer):
     """
     if len(score_map.shape) == 4:
         score_map = score_map[0, :, :, 0]
-        geo_map = geo_map[0, :, :, ]
+        geo_map = geo_map[
+            0,
+            :,
+            :,
+        ]
     # filter the score map
     xy_text = np.argwhere(score_map > SCORE_MAP_THRESHOLD)
     # sort the text boxes via the y axis
@@ -118,8 +121,8 @@ def detect(score_map, geo_map, timer):
 
 
 def get_run_name():
-    _date_and_time = str(datetime.now().isoformat()).split('T')
-    return _date_and_time[0].replace('-', '') + _date_and_time[1].replace(':', '')[:6]
+    _date_and_time = str(datetime.now().isoformat()).split("T")
+    return _date_and_time[0].replace("-", "") + _date_and_time[1].replace(":", "")[:6]
 
 
 def write_result(boxes, im_fn, run_name):
@@ -128,11 +131,11 @@ def write_result(boxes, im_fn, run_name):
     if not os.path.exists(f"output/{run_name}"):
         os.mkdir(f"output/{run_name}")
     file_name = f"res_{os.path.basename(im_fn).split('.')[0]}.txt"
-    with open(os.path.join(f"output/{run_name}", file_name), 'w') as f:
+    with open(os.path.join(f"output/{run_name}", file_name), "w") as f:
         line_txts = []
         for box in boxes:
-            line_txts.append(','.join([str(c) for coord in box for c in coord]))
-        f.write('\n'.join(line_txts))
+            line_txts.append(",".join([str(c) for coord in box for c in coord]))
+        f.write("\n".join(line_txts))
 
 
 def infer(m, visualize_inferred_map=False, visualize_result=False):
@@ -157,7 +160,7 @@ def infer(m, visualize_inferred_map=False, visualize_result=False):
             utils.visualize_inferred(im, score[0, :, :, 0], geo[0, ...])
         if visualize_result:
             utils.visualize_boxes(im[:, :, ::-1], boxes)
-        write_result(boxes, im_fn, run_name) 
+        write_result(boxes, im_fn, run_name)
     return f"output/{run_name}"
 
 

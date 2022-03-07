@@ -14,19 +14,24 @@ def unpool(inputs):
 
 
 def find_out_layers(m, base_model):
-    transfer_layers = [] 
-    if base_model == 'resnet':
-        transfer_layers = ["pool1_pool", "conv3_block4_out", "conv4_block6_out", "conv5_block3_out"]
-    elif base_model == 'mobilenet':
-        transfer_layers = ["conv_pw_2_relu", "conv_pw_5_relu", "conv_pw_11_relu", "conv_pw_13_relu"]
+    transfer_layers = []
+    if base_model == "resnet":
+        transfer_layers = [
+            "pool1_pool",
+            "conv3_block4_out",
+            "conv4_block6_out",
+            "conv5_block3_out",
+        ]
+    elif base_model == "mobilenet":
+        transfer_layers = [
+            "conv_pw_2_relu",
+            "conv_pw_5_relu",
+            "conv_pw_11_relu",
+            "conv_pw_13_relu",
+        ]
     else:
-        raise(INVALID_MODEL_MSG)
-    return [
-        l
-        for l in m.layers
-        if l.name
-        in transfer_layers
-    ]
+        raise (INVALID_MODEL_MSG)
+    return [l for l in m.layers if l.name in transfer_layers]
 
 
 def dice_coefficient(y_true_score, y_pred_score, training_mask):
@@ -41,8 +46,8 @@ def dice_coefficient(y_true_score, y_pred_score, training_mask):
 
 def loss(y_true, y_pred):
     # Extract the training mask from the gt maps
-    training_mask = y_true[:,:,:,-1:]
-    y_true = y_true[:,:,:,:-1]
+    training_mask = y_true[:, :, :, -1:]
+    y_true = y_true[:, :, :, :-1]
     classification_loss = 0.01 * dice_coefficient(
         y_true[:, :, :, -1:], y_pred[:, :, :, -1:], training_mask
     )
@@ -65,7 +70,9 @@ def loss(y_true, y_pred):
     # tf.summary.scalar("geometry_theta", tf.reduce_mean(L_theta * y_true[:, :, :, -1:]))
     L_g = L_AABB + 20 * L_theta
 
-    return 300 * (tf.reduce_mean(L_g * y_true[:, :, :, -1:] * training_mask) + classification_loss)
+    return 300 * (
+        tf.reduce_mean(L_g * y_true[:, :, :, -1:] * training_mask) + classification_loss
+    )
 
 
 # Return the model, based on either ResNet or MobileNet
@@ -78,12 +85,14 @@ def model(freeze=True, base_model=cfg.base_model):
     input = tf.keras.Input(shape=[None, None, 3], dtype=tf.float32)
     input = tf.keras.applications.resnet.preprocess_input(input)
     m = None
-    if base_model == 'resnet':
-        m = tf.keras.applications.resnet50.ResNet50(input_tensor=input, include_top=False)
-    elif base_model == 'mobilenet':
+    if base_model == "resnet":
+        m = tf.keras.applications.resnet50.ResNet50(
+            input_tensor=input, include_top=False
+        )
+    elif base_model == "mobilenet":
         m = tf.keras.applications.MobileNet(input_tensor=input, include_top=False)
     else:
-        raise(INVALID_MODEL_MSG)
+        raise (INVALID_MODEL_MSG)
 
     if freeze:
         for l in m.layers:
