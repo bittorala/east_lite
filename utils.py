@@ -807,7 +807,7 @@ class IcdarValidationSequence(tf.keras.utils.Sequence):
         filenames = self.filenames[
             self.index[idx * self.batch_size : (idx + 1) * self.batch_size]
         ]
-        images, _, score_maps, geo_maps, training_masks = generate_non_augmented(filenames)
+        images, _, score_maps, geo_maps, training_masks = generate(filenames)
         if len(images) == 0:
             return self.__getitem__((idx + 1) % self.__len__())
         return tf.convert_to_tensor(images), tf.convert_to_tensor(
