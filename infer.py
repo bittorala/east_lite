@@ -6,9 +6,10 @@ import tensorflow as tf
 from datetime import datetime
 
 from model import model
-# from utils import restore_rectangle_rbox, visualize_inferred, visualize_boxes, FLAGS
+# from utils import restore_rectangle_rbox, visualize_inferred, visualize_boxes, cfg
 import utils
 import lanms
+from config import cfg
 
 SCORE_MAP_THRESHOLD = 0.8
 BOX_THRESHOLD = 0.1
@@ -23,7 +24,7 @@ def get_images():
     files = []
     exts = ["jpg", "png", "jpeg", "JPG"]
     for parent, _, filenames in os.walk(
-        utils.FLAGS.validation_data_path
+        cfg.validation_data_path
     ):
         for filename in filenames:
             for ext in exts:
@@ -162,5 +163,5 @@ def infer(m, visualize_inferred_map=False, visualize_result=False):
 
 if __name__ == "__main__":
     m = model()
-    m.load_weights(utils.FLAGS.checkpoint_path).expect_partial()
+    m.load_weights(cfg.checkpoint_path).expect_partial()
     infer(m)

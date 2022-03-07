@@ -1,8 +1,9 @@
 import tensorflow as tf
-from utils import IcdarTrainingSequence, FLAGS, IcdarValidationSequence, IcdarEvaluationCallback
 import pickle
 
 import model as m
+from utils import IcdarTrainingSequence, IcdarValidationSequence, IcdarEvaluationCallback
+from config import cfg
 
 MAX_STEPS = 100000
 DECAY_RATE = 0.94
@@ -13,9 +14,9 @@ def loss_fun(y_true, y_pred):
 
 def load_and_train():
     model = m.model(freeze=False)
-    model.load_weights(FLAGS.checkpoint_path).expect_partial()
+    model.load_weights(cfg.checkpoint_path).expect_partial()
     lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
-        FLAGS.learning_rate, decay_steps=MAX_STEPS, decay_rate=DECAY_RATE
+        cfg.learning_rate, decay_steps=MAX_STEPS, decay_rate=DECAY_RATE
     )
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=lr_schedule),
@@ -27,7 +28,7 @@ def load_and_train():
         IcdarTrainingSequence(),
         validation_data=IcdarValidationSequence(),
         use_multiprocessing=False,
-        epochs=FLAGS.epochs,
+        epochs=cfg.epochs,
         callbacks=[IcdarEvaluationCallback(1)],
     )
     with open(f"history_ft", "wb") as f:
@@ -41,7 +42,7 @@ def train():
     # with strategy.scope():
     model = m.model(freeze=True)
     lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
-        FLAGS.learning_rate, decay_steps=MAX_STEPS, decay_rate=DECAY_RATE, staircase=True
+        cfg.learning_rate, decay_steps=MAX_STEPS, decay_rate=DECAY_RATE, staircase=True
     )
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=lr_schedule),
@@ -60,7 +61,7 @@ def train():
         IcdarTrainingSequence(),
         validation_data=IcdarValidationSequence(),
         use_multiprocessing=False,
-        epochs=FLAGS.epochs,
+        epochs=cfg.epochs,
         callbacks=[model_checkpoint_callback, IcdarEvaluationCallback()],
     )
     with open(f"history", "wb") as f:
@@ -68,7 +69,7 @@ def train():
 
 
 if __name__ == "__main__":
-    if FLAGS.load_and_train:
+    if cfg.load_and_train:
         load_and_train()
     else:
         train()

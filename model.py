@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, UpSampling2D
 import numpy as np
+from config import cfg
 
 TEXT_SCALE = 512
 INVALID_MODEL_MSG = "Choose a valid base model: either 'resnet' or 'mobilenet'"
@@ -64,14 +65,14 @@ def loss(y_true, y_pred):
     # tf.summary.scalar("geometry_theta", tf.reduce_mean(L_theta * y_true[:, :, :, -1:]))
     L_g = L_AABB + 20 * L_theta
 
-    return 150 * (tf.reduce_mean(L_g * y_true[:, :, :, -1:] * training_mask) + classification_loss)
+    return 300 * (tf.reduce_mean(L_g * y_true[:, :, :, -1:] * training_mask) + classification_loss)
 
 
 # Return the model, based on either ResNet or MobileNet
 # Args
 # 1. freeze: Whether or not to freeze base model layers (make them non trainable)
 # 2. base_model: One of either 'resnet' or 'mobilenet'
-def model(freeze=True, base_model='resnet'):
+def model(freeze=True, base_model=cfg.base_model):
     # RGB -> BGR conversion and substract the means of ImageNet dataset
     # Note that although cv2 loads as BGR, the generator has changed to RGB
     input = tf.keras.Input(shape=[None, None, 3], dtype=tf.float32)

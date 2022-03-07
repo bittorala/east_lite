@@ -16,50 +16,7 @@ import json
 import tensorflow as tf
 from icdar_detection_script import script
 import infer
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "--training_data_path",
-    type=str,
-    default="/data/ocr/",
-    help="training dataset to use",
-)
-parser.add_argument(
-    "--validation_data_path",
-    type=str,
-    default="/data/ocr/test/",
-    help="validation dataset to use",
-)
-parser.add_argument(
-    "--max_image_large_side", type=int, default=1280, help="max image size of training"
-)
-parser.add_argument(
-    "--max_text_size",
-    type=int,
-    default=800,
-    help="if the text in the input image is bigger than this, then we resize"
-    "the image according to this",
-)
-parser.add_argument(
-    "--min_text_size",
-    type=int,
-    default=10,
-    help="if the text size is smaller than this, we ignore it during training",
-)
-parser.add_argument(
-    "--min_crop_side_ratio",
-    type=float,
-    default=0.1,
-    help="when doing random crop from input image, the" "min length of min(H, W",
-)
-parser.add_argument("--load_and_train", action="store_true", default=False)
-parser.add_argument("--checkpoint_path", type=str, default="checkpoint/ckpt")
-parser.add_argument("--batch_size", type=int, default=16)
-parser.add_argument("--epochs", type=int, default=70)
-parser.add_argument("--learning_rate", type=float, default=1e-4)
-FLAGS = parser.parse_args()
-
+from config import cfg
 
 def get_images(path):
     files = []
@@ -72,7 +29,7 @@ def get_test_images():
     files = []
     for ext in ["jpg", "png", "jpeg", "JPG"]:
         files.extend(
-            glob.glob(os.path.join(FLAGS.training_data_path, "*.{}".format(ext)))
+            glob.glob(os.path.join(cfg.training_data_path, "*.{}".format(ext)))
         )
     return files
 
@@ -271,8 +228,8 @@ def crop_area(im, polys, tags, crop_background=False, max_tries=50):
         ymin = np.clip(ymin, 0, h - 1)
         ymax = np.clip(ymax, 0, h - 1)
         if (
-            xmax - xmin < FLAGS.min_crop_side_ratio * w
-            or ymax - ymin < FLAGS.min_crop_side_ratio * h
+            xmax - xmin < cfg.min_crop_side_ratio * w
+            or ymax - ymin < cfg.min_crop_side_ratio * h
         ):
             # area too small
             continue
@@ -663,7 +620,7 @@ def generate_rbox(im_size, polys, tags):
         poly_w = min(
             np.linalg.norm(poly[0] - poly[1]), np.linalg.norm(poly[2] - poly[3])
         )
-        if min(poly_h, poly_w) < FLAGS.min_text_size:
+        if min(poly_h, poly_w) < cfg.min_text_size:
             cv2.fillPoly(training_mask, poly.astype(np.int32)[np.newaxis, :, :], 0)
         if tag:
             cv2.fillPoly(training_mask, poly.astype(np.int32)[np.newaxis, :, :], 0)
@@ -819,8 +776,8 @@ def generate(
 
 class IcdarTrainingSequence(tf.keras.utils.Sequence):
     def __init__(self):
-        self.filenames = np.array(get_images(FLAGS.training_data_path))
-        self.batch_size = FLAGS.batch_size
+        self.filenames = np.array(get_images(cfg.training_data_path))
+        self.batch_size = cfg.batch_size
         self.index = np.array(range(len(self.filenames)))
         np.random.shuffle(self.index)
 
@@ -839,8 +796,8 @@ class IcdarTrainingSequence(tf.keras.utils.Sequence):
 
 class IcdarValidationSequence(tf.keras.utils.Sequence):
     def __init__(self):
-        self.filenames = np.array(get_images(FLAGS.validation_data_path))
-        self.batch_size = FLAGS.batch_size
+        self.filenames = np.array(get_images(cfg.validation_data_path))
+        self.batch_size = cfg.batch_size
         self.index = np.array(range(len(self.filenames)))
         np.random.shuffle(self.index)
 
@@ -867,8 +824,8 @@ class IcdarEvaluationCallback(tf.keras.callbacks.Callback):
         self.logs_file = os.path.join(self.training_results_path, 'logs')
         f = open(self.logs_file, 'w')
         f.close()
-        with open(f'{self.logs_file}_FLAGS.json', 'w') as f:
-            json.dump(FLAGS.__dict__, f, indent=2)
+        with open(f'{self.logs_file}_cfg.json', 'w') as f:
+            json.dump(cfg.__dict__, f, indent=2)
 
 
     def on_epoch_end(self, epoch, logs=None):
