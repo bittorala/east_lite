@@ -17,14 +17,16 @@ BOX_THRESHOLD = 0.1
 NMS_THRESHOLD = 0.2
 
 
-def get_images():
+def get_images(validation_dataset):
     """
     find image files in test data path
     :return: list of files found
     """
     files = []
     exts = ["jpg", "png", "jpeg", "JPG"]
-    for parent, _, filenames in os.walk(cfg.validation_data_path):
+    for parent, _, filenames in os.walk(
+        cfg.validation_data_path if validation_dataset else cfg.data_path
+    ):
         for filename in filenames:
             for ext in exts:
                 if filename.endswith(ext):
@@ -138,9 +140,9 @@ def write_result(boxes, im_fn, run_name):
         f.write("\n".join(line_txts))
 
 
-def infer(m, visualize_inferred_map=False, visualize_result=False):
+def infer(m, visualize_inferred_map=False, visualize_result=False, validation_dataset=False):
     run_name = get_run_name()
-    imgs = get_images()
+    imgs = get_images(validation_dataset)
     for im_fn in imgs:
         im = cv2.imread(im_fn)[:, :, ::-1]
         im_resized, (ratio_h, ratio_w) = resize_image(im)

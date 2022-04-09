@@ -2,6 +2,12 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
+    "--data_path",
+    type=str,
+    default="/data/demo",
+    help="Data to infer"
+)
+parser.add_argument(
     "--training_data_path",
     type=str,
     default="/data/ocr/",

@@ -841,7 +841,7 @@ class IcdarEvaluationCallback(tf.keras.callbacks.Callback):
 
 
 def infer_and_test(model):
-    output_path = infer.infer(model)
+    output_path = infer.infer(model, validation_dataset=True)
     zip_path = "tmp_results.zip"
     with ZipFile(zip_path, "w") as zipObj:
         for fn in os.listdir(output_path):
