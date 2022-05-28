@@ -172,16 +172,28 @@ def visualize_inferred(im, score_map, geo_map):
     plt.close()
 
 
-def visualize_boxes(im, boxes):
+def draw_boxes(im, boxes):
     for box in boxes:
         im = cv2.polylines(
             im,
             [box.reshape((-1, 1, 2))],
             isClosed=True,
             color=(255, 255, 0),
-            thickness=1,
+            thickness=2,
         )
-    plt.imshow(im[:, :, ::-1])
+    return im
+
+
+def visualize_boxes(im, boxes):
+    im = draw_boxes(im, boxes)
+    sizes = np.shape(im)
+    fig = plt.figure()
+    fig.set_size_inches(3. * sizes[0] / sizes[1], 1, forward=False)
+    ax = plt.Axes(fig, [0., 0., 1., 1.])
+    ax.set_axis_off()
+    # plt.imshow(im[:, :, ::-1])
+    fig.add_axes(ax)
+    ax.imshow(im[:,:,::-1])
     plt.show()
 
 

@@ -9,3 +9,28 @@ loss.png
 tmp_results.zip
 *.pyc
 *results*
+
+# Logs
+spa/logs
+spa/*.log
+spa/npm-debug.log*
+spa/yarn-debug.log*
+spa/yarn-error.log*
+spa/pnpm-debug.log*
+spa/lerna-debug.log*
+spa/
+spa/node_modules
+spa/dist
+spa/dist-ssr
+spa/*.local
+spa/
+# Editor directories and files
+spa/.vscode/*
+spa/!.vscode/extensions.json
+spa/.idea
+spa/.DS_Store
+spa/*.suo
+spa/*.ntvs*
+spa/*.njsproj
+spa/*.sln
+spa/*.sw?

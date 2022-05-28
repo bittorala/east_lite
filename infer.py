@@ -4,10 +4,10 @@ import os
 import time
 import tensorflow as tf
 from datetime import datetime
+import json
 
 from model import model
 
-# from utils import restore_rectangle_rbox, visualize_inferred, visualize_boxes, cfg
 import utils
 import lanms
 from config import cfg
@@ -127,7 +127,7 @@ def get_run_name():
     return _date_and_time[0].replace("-", "") + _date_and_time[1].replace(":", "")[:6]
 
 
-def write_result(boxes, im_fn, run_name):
+def write_result(boxes, im_fn, run_name, timers):
     if not os.path.exists("output"):
         os.mkdir("output")
     if not os.path.exists(f"output/{run_name}"):
@@ -138,32 +138,46 @@ def write_result(boxes, im_fn, run_name):
         for box in boxes:
             line_txts.append(",".join([str(c) for coord in box for c in coord]))
         f.write("\n".join(line_txts))
+    if cfg.write_timer:
+        with open(os.path.join(f"output/{run_name}", f"timer_{run_name}.json"), "w") as f:
+            json.dump(timers, f)
 
 
-def infer(m, visualize_inferred_map=False, visualize_result=False, validation_dataset=False):
+def infer(m, visualize_inferred_map=False, validation_dataset=False):
     run_name = get_run_name()
     imgs = get_images(validation_dataset)
+    timers = []
     for im_fn in imgs:
+        print(f"Inferring {im_fn}")
         im = cv2.imread(im_fn)[:, :, ::-1]
-        im_resized, (ratio_h, ratio_w) = resize_image(im)
-
-        timer = {}
-        output = m(tf.convert_to_tensor(im_resized[np.newaxis, :, :, :]))
-        geo, score = tf.split(output, [5, 1], -1)
-        boxes, timer = detect(np.array(score), np.array(geo), timer)
-        if boxes is not None:
-            boxes = boxes[:, :8].reshape(-1, 4, 2)
-            boxes[:, :, 0] /= ratio_w
-            boxes[:, :, 1] /= ratio_h
-            boxes = boxes.astype(np.int32)
-        else:
-            boxes = []
+        boxes, score, geo, timer = infer_im(m, im) 
+        timers.append(timer)
         if visualize_inferred_map:
             utils.visualize_inferred(im, score[0, :, :, 0], geo[0, ...])
-        if visualize_result:
+        if cfg.visualize:
             utils.visualize_boxes(im[:, :, ::-1], boxes)
-        write_result(boxes, im_fn, run_name)
+        if not cfg.dont_write:
+            write_result(boxes, im_fn, run_name, timers)
     return f"output/{run_name}"
+
+
+def infer_im(m, im):
+    im_resized, (ratio_h, ratio_w) = resize_image(im)
+
+    timer = {}
+    t0 = time.time()
+    output = m(tf.convert_to_tensor(im_resized[np.newaxis, :, :, :]))
+    timer["network"] = time.time() - t0
+    geo, score = tf.split(output, [5, 1], -1)
+    boxes, timer = detect(np.array(score), np.array(geo), timer)
+    if boxes is not None:
+        boxes = boxes[:, :8].reshape(-1, 4, 2)
+        boxes[:, :, 0] /= ratio_w
+        boxes[:, :, 1] /= ratio_h
+        boxes = boxes.astype(np.int32)
+    else:
+        boxes = []
+    return boxes, score, geo, timer
 
 
 if __name__ == "__main__":
