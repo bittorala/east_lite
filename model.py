@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, UpSampling2D
 import numpy as np
-from config import cfg
+import os
 
 TEXT_SCALE = 512
 INVALID_MODEL_MSG = "Choose a valid base model: either 'resnet' or 'mobilenet'"
@@ -79,7 +79,7 @@ def loss(y_true, y_pred):
 # Args
 # 1. freeze: Whether or not to freeze base model layers (make them non trainable)
 # 2. base_model: One of either 'resnet' or 'mobilenet'
-def model(freeze=True, base_model=cfg.base_model):
+def model(freeze=True, base_model='mobilenet'):
     # RGB -> BGR conversion and substract the means of ImageNet dataset
     # Note that although cv2 loads as BGR, the generator has changed to RGB
     input = tf.keras.Input(shape=[None, None, 3], dtype=tf.float32)
