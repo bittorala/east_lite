@@ -5,16 +5,30 @@ import uuid
 from io import BytesIO
 import numpy as np
 import cv2
+import os
+import tensorflow as tf
 
 from model import model
 from infer import infer_im
+from download_ckpt import load_ckpt
 
+
+load_ckpt()
 m = model()
-m.load_weights('/tmp/ckpt/ckpt')
+m.load_weights("/tmp/ckpt/ckpt")
+
+
+print("-" * 50)
+if len(tf.config.list_physical_devices('GPU')):
+    print("GPU acceleration is ON")
+else:
+    print("No GPU acceleration! Please install CUDA to speed up"
+          " inference massively")
+print("-" * 50)
 
 app = FastAPI()
 
-origins = ["http://localhost", "http://localhost:3000"]
+origins = ["http://localhost", "http://localhost:3000", "localhost", "localhost:3000"]
 
 app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
@@ -33,21 +47,12 @@ def list_to_dict(list):
 
 @app.post("/image/")
 async def upload_file(image: UploadFile):
-    # image.filename = f"{uuid.uuid4()}.jpg"
-    # contents = await image.read()
-
-    # with open(f"{image.filename}", "wb") as f:
-    #     f.write(contents)
     contents = await image.read()
     nparr = np.fromstring(contents, np.uint8)
     image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    boxes, score, geo, timer = infer_im(m, image)
+    boxes, _, _, timer = infer_im(m, image)
 
     print(f"Did it in {timer} time")
     print(np.shape(boxes))
 
     return {"array": boxes.tolist()}
-
-    result = {'boxes': {f'b_{i}': list_to_dict(list(np.reshape(b, 8))) for (i, b) in enumerate(boxes)}}
-    print(result)
-    return result

@@ -4,7 +4,6 @@ import sys
 def define_arguments():
     import argparse
 
-    print("AYA")
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--data_path",

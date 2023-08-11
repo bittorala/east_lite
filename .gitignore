@@ -9,6 +9,7 @@ loss.png
 tmp_results.zip
 *.pyc
 *results*
+.venv/*
 
 # Logs
 spa/logs
