@@ -166,7 +166,6 @@ def get_tl_line_values(
     numPoints = 4
 
     if LTRB:
-
         numPoints = 4
 
         if withTranscription and withConfidence:
@@ -224,7 +223,6 @@ def get_tl_line_values(
             validate_point_inside_bounds(xmax, ymax, imWidth, imHeight)
 
     else:
-
         numPoints = 8
 
         if withTranscription and withConfidence:

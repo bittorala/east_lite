@@ -139,7 +139,9 @@ def write_result(boxes, im_fn, run_name, timers):
             line_txts.append(",".join([str(c) for coord in box for c in coord]))
         f.write("\n".join(line_txts))
     if cfg.write_timer:
-        with open(os.path.join(f"output/{run_name}", f"timer_{run_name}.json"), "w") as f:
+        with open(
+            os.path.join(f"output/{run_name}", f"timer_{run_name}.json"), "w"
+        ) as f:
             json.dump(timers, f)
 
 
@@ -150,7 +152,7 @@ def infer(m, visualize_inferred_map=False, validation_dataset=False):
     for im_fn in imgs:
         print(f"Inferring {im_fn}")
         im = cv2.imread(im_fn)[:, :, ::-1]
-        boxes, score, geo, timer = infer_im(m, im) 
+        boxes, score, geo, timer = infer_im(m, im)
         timers.append(timer)
         if visualize_inferred_map:
             utils.visualize_inferred(im, score[0, :, :, 0], geo[0, ...])

@@ -19,22 +19,19 @@ m.load_weights("/tmp/ckpt/ckpt")
 
 
 print("-" * 50)
-if len(tf.config.list_physical_devices('GPU')):
+if len(tf.config.list_physical_devices("GPU")):
     print("GPU acceleration is ON")
 else:
-    print("No GPU acceleration! Please install CUDA to speed up"
-          " inference massively")
+    print("No GPU acceleration! Please install CUDA to speed up" " inference massively")
 print("-" * 50)
 
 app = FastAPI()
 
-origins = ["http://localhost", "http://localhost:3000", "localhost", "localhost:3000"]
-
-app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
+
 
 @app.get("/model-info/")
 def read_item():
@@ -42,8 +39,9 @@ def read_item():
 
 
 def list_to_dict(list):
-    order = ['tlx', 'tly', 'trx', 'try', 'brx', 'bry', 'blx', 'bly']
-    return {name: value for (name,value) in zip(order, list)}
+    order = ["tlx", "tly", "trx", "try", "brx", "bry", "blx", "bly"]
+    return {name: value for (name, value) in zip(order, list)}
+
 
 @app.post("/image/")
 async def upload_file(image: UploadFile):

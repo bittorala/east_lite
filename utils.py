@@ -188,12 +188,12 @@ def visualize_boxes(im, boxes):
     im = draw_boxes(im, boxes)
     sizes = np.shape(im)
     fig = plt.figure()
-    fig.set_size_inches(3. * sizes[0] / sizes[1], 1, forward=False)
-    ax = plt.Axes(fig, [0., 0., 1., 1.])
+    fig.set_size_inches(3.0 * sizes[0] / sizes[1], 1, forward=False)
+    ax = plt.Axes(fig, [0.0, 0.0, 1.0, 1.0])
     ax.set_axis_off()
     # plt.imshow(im[:, :, ::-1])
     fig.add_axes(ax)
-    ax.imshow(im[:,:,::-1])
+    ax.imshow(im[:, :, ::-1])
     plt.show()
 
 

@@ -58,7 +58,7 @@ async function onFileInput() {
   const img = new Image();
   img.src = previewImage.value!;
   await new Promise((resolve) => {
-    img.onload = () => resolve();
+    img.onload = () => resolve(true);
   });
   const c = document.getElementById("canvas") as HTMLCanvasElement;
   const ctx = c!.getContext("2d")!;

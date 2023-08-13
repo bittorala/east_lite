@@ -1,15 +1,13 @@
 import os
 import sys
 
+
 def define_arguments():
     import argparse
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--data_path",
-        type=str,
-        default="/data/demo",
-        help="Data to infer"
+        "--data_path", type=str, default="/data/demo", help="Data to infer"
     )
     parser.add_argument(
         "--training_data_path",
@@ -24,7 +22,10 @@ def define_arguments():
         help="validation dataset to use",
     )
     parser.add_argument(
-        "--max_image_large_side", type=int, default=1280, help="max image size of training"
+        "--max_image_large_side",
+        type=int,
+        default=1280,
+        help="max image size of training",
     )
     parser.add_argument(
         "--max_text_size",
@@ -57,7 +58,8 @@ def define_arguments():
     parser.add_argument("--write_timer", action="store_true", default=False)
     return parser.parse_args()
 
+
 cfg = {}
 
-if int(os.getenv('APP_RUNNING') or 0) != 1:
+if int(os.getenv("APP_RUNNING") or 0) != 1:
     cfg = define_arguments()

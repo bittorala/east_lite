@@ -183,7 +183,6 @@ def evaluate_method(gtFilePath, submFilePath, evaluationParams):
     arrGlobalMatches = []
 
     for resFile in gt:
-
         gtFile = rrc_evaluation_funcs.decode_utf8(gt[resFile])
         recall = 0
         precision = 0
@@ -245,7 +244,6 @@ def evaluate_method(gtFilePath, submFilePath, evaluationParams):
         )
 
         if resFile in subm:
-
             detFile = rrc_evaluation_funcs.decode_utf8(subm[resFile])
 
             (
