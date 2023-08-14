@@ -6,6 +6,20 @@ algorithm friendlier to resource-constrained devices. It is written with TensorF
 Credit to 
 https://github.com/argman/EAST, whose code we have used for geometric operations  and data augmentation in the ground truth generations, and for the post-processing and NMS. You can also change the base model to ResNet by using the flag `--base_model resnet`.
 
+## Launching the demo web
+You can very easily set up a demo web by building and running the Dockerfile. This is the easiest way to set up GPU acceleration easily using [NVIDIA Container Toolkit](https://github.com/NVIDIA/nvidia-docker/blob/master/README.md#quickstart).
+
+Build the image with
+```
+docker build -t east-lite-web .
+```
+and run a GPU-accelerated container with
+```
+docker run --name east-lite-web -p 8000:8000 -p 3000:3000 -d --gpus all east-lite-web
+```
+
+Then navigate to `http://localhost:3000` and check out the algorithm and its speed! You can find out whether GPU acceleration is on via the Docker logs (with `docker logs east-lite-web`) or by GETting the backend's root at `http://localhost:8000`.
+
 ## How to use
 Download [the pretrained weights](https://drive.google.com/file/d/1_SyIM-CNTBqdPsviw2aVa7qXjavjtRY0/view?usp=sharing). This model obtains an F-score of 0.749 on ICDAR15 (if you train a better version please submit it :blush:).
 

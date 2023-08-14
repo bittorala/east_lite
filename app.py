@@ -1,11 +1,8 @@
-from typing import Union
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-import uuid
-from io import BytesIO
 import numpy as np
 import cv2
-import os
+import sys
 import tensorflow as tf
 
 from model import model
@@ -18,24 +15,39 @@ m = model()
 m.load_weights("/tmp/ckpt/ckpt")
 
 
-print("-" * 50)
+gpu_acceleration = False
+print("-" * 50, file=sys.stderr)
 if len(tf.config.list_physical_devices("GPU")):
-    print("GPU acceleration is ON")
+    print("GPU acceleration is ON", file=sys.stderr)
+    gpu_acceleration = True
 else:
-    print("No GPU acceleration! Please install CUDA to speed up" " inference massively")
-print("-" * 50)
+    print(
+        "No GPU acceleration! Please install CUDA to speed up" " inference massively",
+        file=sys.stderr,
+    )
+print("-" * 50, file=sys.stderr)
+
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return {"EAST": "Lite", "GPU Acceleration": "On" if gpu_acceleration else "Off"}
 
 
 @app.get("/model-info/")
 def read_item():
-    return [l.__str__ for l in m.layers]
+    return [l.__str__() for l in m.layers]
 
 
 def list_to_dict(list):

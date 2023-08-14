@@ -75,17 +75,28 @@ async function inferText(factor: number) {
   const formData = new FormData();
   formData.append("image", file.value!.files![0]);
   inferring.value = true;
-  const response = await axios.post("http://localhost:8000/image/", formData, {
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "multipart/form-data",
-    },
-  });
-  inferring.value = false;
-  boxesFlat.value = response.data.array.map((b: any) =>
-    b.flatMap((coords: any) => coords)
-  );
-  drawText(factor);
+  try {
+    const response = await axios.post(
+      `http://${window.location.host.replace(":3000", "")}:8000/image/`,
+      formData,
+      {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    inferring.value = false;
+    boxesFlat.value = response.data.array.map((b: any) =>
+      b.flatMap((coords: any) => coords)
+    );
+    drawText(factor);
+  } catch (error) {
+    console.log(error);
+    alert(`There was an error when calling the backend! ${error}`);
+    inferring.value = false;
+    return;
+  }
 }
 
 function drawText(factor: number) {
